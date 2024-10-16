@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+
+  referrals-api:
+    image: "${APP_API_IMAGE_NAME}"
+    environment:
+      - DB_USERNAME=${APP_DB_USERNAME}
+      - DB_PASSWORD=${APP_DB_PASSWORD}
+      - DB_DATABASE=${APP_DB_NAME}
+      - DB_PORT=${APP_DB_PORT}
+      - DB_HOST=${APP_DB_HOST}
+      - API_REFERRER_CODE_EXPIRE_MINUTES=${APP_API_REFERRER_CODE_EXPIRE_MINUTES}
+      - API_REFERRER_CODE_LENGTH=${APP_API_REFERRER_CODE_LENGTH}
+      - API_JWT_SECRET=${APP_API_JWT_SECRET}
+      - API_JWT_ALGORITHM=${APP_API_JWT_ALGORITHM}
+      - API_JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${APP_API_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+    ports:
+      - "8080:8080"
+
+networks:
+  default:
+    name: ${APP_NETWORK}
+    external: true

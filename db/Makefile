@@ -1,0 +1,23 @@
+REFERRALS_DB_IMAGE_NAME ?= referrals-db
+REFERRALS_DB_NAME ?=  referrals
+REFERRALS_DB_USERNAME ?= referrals
+REFERRALS_DB_PASSWORD ?= referrals
+REFERRALS_DB_PORT ?= 5432
+REFERRALS_DB_HOST ?= referrals-db
+REFERRALS_NETWORK ?= "referrals"
+
+.PHONY: build
+build:
+	docker build -t $(REFERRALS_DB_IMAGE_NAME) -f Dockerfile .
+
+.PHONY: run
+run:
+	- docker network create $(REFERRALS_NETWORK)
+	APP_NETWORK=$(REFERRALS_NETWORK) \
+	APP_DB_IMAGE_NAME=$(REFERRALS_DB_IMAGE_NAME) \
+    APP_DB_USERNAME=$(REFERRALS_DB_USERNAME) \
+    APP_DB_PASSWORD=$(REFERRALS_DB_PASSWORD) \
+    APP_DB_NAME=$(REFERRALS_DB_NAME) \
+    APP_DB_PORT=$(REFERRALS_DB_PORT) \
+    APP_DB_HOST=$(REFERRALS_DB_HOST) \
+	docker-compose -f docker-compose.yaml up -d

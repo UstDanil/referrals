@@ -1,0 +1,190 @@
+openapi: 3.0.3
+info:
+  title: Swagger Referrals - OpenAPI 3.0
+  description:
+    A project for a referral system with registration and authentication of users with the ability to generate and use referral codes.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: auth
+    description: SignUp and Login
+  - name: referrer_code
+    description: Generate and get referrer codes
+  - name: referral
+    description: Get user referrals
+paths:
+  /auth/signup:
+    post:
+      tags:
+        - auth
+      summary: Create user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+      responses:
+        '201':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    example: 329d4a82-d787-46a1-8ec9-5277145b3169
+        '400':
+          description: User was not created (invalid email, email exists or the referrer wasn't found by code)
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: User login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogInRequest'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzX3Rva2VuIiwiZXhwIjoxNzMxNjY3NTEyLCJpYXQiOjE3MjkwNzU1MTIsInN1YiI6IjEyOWYxNThkLTFjYjYtNGQxNy04OTJiLTBmNWVkNTdmZjQ5ZCJ9.rrRai18b3O_8B81xVO0Zz5HwFFh8ZjiTMivT7MOxd4MB_vNnsw-WCil9Qg_O4P5z4q_iCXgyUupxEhEQ3Mpz4g
+        '400':
+          description: Invalid email
+        '401':
+          description: Not authenticated (wrong email or password)
+  /referrer_code:
+    get:
+      tags:
+        - referrer_code
+      summary: Get referrer code by user email
+      parameters:
+      - name: email
+        in: query
+        required: true
+        schema:
+          type: string
+          example: email@rambler.ru
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  referrer_code:
+                    type: string
+                    example: bCyBXJFZOV
+        '400':
+          description: No referrer code for this email.
+    post:
+      tags:
+        - referrer_code
+      summary: Create referrer code
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  referrer_code:
+                    type: string
+                    example: bCyBXJFZOV
+        '400':
+          description: New referrer code not created (wrong token)
+    delete:
+      tags:
+        - referrer_code
+      summary: Delete user referrer code
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: successful operation
+  /referral:
+    get:
+      tags:
+        - referral
+      summary: Get referrals by user id
+      parameters:
+      - name: user_id
+        in: query
+        required: true
+        schema:
+          type: string
+          example: 2812810d-bacd-4528-a7f0-b9914c1c9d20
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralsResponse'
+        '400':
+          description: Error (not uuid in input field).
+components:
+  schemas:
+    SignUpRequest:
+      type: object
+      required:
+      - "email"
+      - "name"
+      - "password"
+      properties:
+        email:
+          type: string
+          example: email@rambler.ru
+        name:
+          type: string
+          example: the_user
+        password:
+          type: string
+          example: '12345'
+        referrer_code:
+          type: string
+          example: '12345'
+    LogInRequest:
+      type: object
+      required:
+      - "email"
+      - "password"
+      properties:
+        email:
+          type: string
+          example: email@rambler.ru
+        password:
+          type: string
+          example: '12345'
+    ReferralsResponse:
+      type: object
+      properties:
+        user_referrals:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: the_user
+              email:
+                type: string
+                example: email@rambler.ru
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
